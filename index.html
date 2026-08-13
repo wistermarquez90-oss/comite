@@ -21,14 +21,26 @@
     --marfil: #FAF6EE;
     --gris-calido: #6B5B52;
   }
+  
   * { box-sizing: border-box; }
-  html, body { margin: 0; padding: 0; }
+  
+  /* Limpiamos el body para que html2canvas no se confunda con los márgenes/paddings */
+  html, body { margin: 0; padding: 0; width: 100%; height: 100%; }
   body { 
-    string-set: doctitle ""; 
     background-color: #e0e0e0;
+  }
+
+  /* Nuevo contenedor para centrar visualmente en la web sin afectar el PDF */
+  .layout-wrapper {
     display: flex;
     justify-content: center;
-    padding: 20px;
+    padding: 30px;
+    width: 100%;
+  }
+
+  /* Separamos la sombra del contenedor principal del PDF */
+  .cover-shadow {
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
   }
 
   @page { size: A4 landscape; margin: 0; }
@@ -94,7 +106,7 @@
     background: var(--marfil);
     font-family: "EB Garamond", Georgia, serif;
     color: var(--vino-oscuro);
-    box-shadow: 0 0 15px rgba(0,0,0,0.1); 
+    /* La sombra se movió a .cover-shadow para evitar recortes en el PDF */
   }
 
   /* Marcos */
@@ -107,8 +119,9 @@
     border: 0.6pt solid var(--dorado);
   }
 
-  /* Esquinas ornamentales */
+  /* Esquinas ornamentales (Ahora en contenedores div) */
   .corner { position: absolute; width: 16mm; height: 16mm; z-index: 3; }
+  .corner svg { width: 100%; height: 100%; }
   .corner.tl { top: 6.5mm;  left: 6.5mm; }
   .corner.tr { top: 6.5mm;  right: 6.5mm;  transform: scaleX(-1); }
   .corner.bl { bottom: 6.5mm; left: 6.5mm; transform: scaleY(-1); }
@@ -132,13 +145,12 @@
     justify-content: space-between;
   }
   
-  /* NUEVO: Tamaños independientes para equilibrar el peso visual */
   .logo-izquierdo { 
-    height: 42mm; /* Un poco más alto porque es rectangular */
+    height: 42mm; 
     width: auto; 
   }
   .logo-derecho { 
-    height: 43mm; /* Más bajo para que el círculo no se vea gigante */
+    height: 43mm; 
     width: auto; 
   }
   
@@ -164,8 +176,14 @@
     display: flex; align-items: center; justify-content: center;
     margin-top: 2.6mm; gap: 2.5mm;
   }
-  .divider .line { width: 42mm; height: 0.55px; background: var(--salvia); }
-  .divider .diamond {
+  /* Ajuste de líneas para evitar que desaparezcan */
+  .divider .line, .nombre-rule .line, .fecha-rule .line { 
+    height: 1px; 
+    background: var(--salvia); 
+    opacity: 0.7; 
+  }
+  .divider .line { width: 42mm; }
+  .divider .diamond, .nombre-rule .diamond, .fecha-rule .diamond {
     width: 2.1mm; height: 2.1mm; background: var(--dorado);
     transform: rotate(45deg);
   }
@@ -209,11 +227,7 @@
     display: flex; align-items: center; justify-content: center;
     margin-top: 1.6mm; gap: 2.5mm;
   }
-  .nombre-rule .line { width: 34mm; height: 0.55px; background: var(--salvia); }
-  .nombre-rule .diamond {
-    width: 1.8mm; height: 1.8mm; background: var(--dorado);
-    transform: rotate(45deg);
-  }
+  .nombre-rule .line { width: 34mm; }
 
   /* Cuerpo */
   .cuerpo {
@@ -237,28 +251,24 @@
     margin-top: 3.5mm;
   }
 
-  /* Divisor ornamental bajo la fecha */
   .fecha-rule {
     display: flex; align-items: center; justify-content: center;
     margin-top: 3.5mm; gap: 2.5mm;
   }
-  .fecha-rule .line { width: 26mm; height: 0.55px; background: var(--salvia); }
-  .fecha-rule .diamond {
-    width: 1.8mm; height: 1.8mm; background: var(--dorado);
-    transform: rotate(45deg);
-  }
+  .fecha-rule .line { width: 26mm; }
 
-  /* Firmas */
+  /* Firmas con posicionamiento absoluto para evitar superposiciones */
   .firmas {
     width: 100%;
     display: flex;
     justify-content: space-between;
-    margin-top: auto; 
-    padding: 0 12mm 1.5mm 12mm;
+    position: absolute; /* Anclado a la base del contenedor .content */
+    bottom: 0;
+    left: 0;
   }
   .firma { width: 62mm; text-align: center; }
   .firma .sig-line {
-    width: 52mm; height: 0.7px; background: #8A7A70;
+    width: 52mm; height: 1px; background: #8A7A70;
     margin: 0 auto 1.8mm auto;
   }
   .firma .nombre-firma {
@@ -276,7 +286,7 @@
     letter-spacing: 1.6px;
     text-transform: uppercase;
     color: var(--vinotinto);
-    margin: 0 0 0.8mm 0;
+    margin: 0;
   }
 </style>
 </head>
@@ -286,108 +296,121 @@
 <div class="panel-controles">
   <h3>Generador ULA</h3>
   <input type="text" id="input-nombre" placeholder="Nombre del Estudiante" oninput="actualizarCertificado()">
-  <input type="text" id="input-tema" placeholder="Tema de la presentación" oninput="actualizarCertificado()">
   <button class="btn-descarga" onclick="descargarCertificado()">Descargar PDF</button>
 </div>
 
-<!-- Contenedor principal del certificado -->
-<div class="cover" id="certificado-pdf">
-  <div class="frame-outer"></div>
-  <div class="frame-inner"></div>
+<!-- Layout envolvente para aislar el canvas -->
+<div class="layout-wrapper">
+  
+  <!-- Contenedor de la sombra -->
+  <div class="cover-shadow">
 
-  <!-- Esquinas ornamentales -->
-  <svg class="corner tl" viewBox="0 0 60 60">
-    <path d="M4 44 V12 Q4 4 12 4 H44" fill="none" stroke="#6D1A2D" stroke-width="2.2"/>
-    <path d="M11 36 V16 Q11 11 16 11 H36" fill="none" stroke="#C9A227" stroke-width="1.1"/>
-    <rect x="1.2" y="1.2" width="5.6" height="5.6" transform="rotate(45 4 4)" fill="#C9A227"/>
-  </svg>
-  <svg class="corner tr" viewBox="0 0 60 60">
-    <path d="M4 44 V12 Q4 4 12 4 H44" fill="none" stroke="#6D1A2D" stroke-width="2.2"/>
-    <path d="M11 36 V16 Q11 11 16 11 H36" fill="none" stroke="#C9A227" stroke-width="1.1"/>
-    <rect x="1.2" y="1.2" width="5.6" height="5.6" transform="rotate(45 4 4)" fill="#C9A227"/>
-  </svg>
-  <svg class="corner bl" viewBox="0 0 60 60">
-    <path d="M4 44 V12 Q4 4 12 4 H44" fill="none" stroke="#6D1A2D" stroke-width="2.2"/>
-    <path d="M11 36 V16 Q11 11 16 11 H36" fill="none" stroke="#C9A227" stroke-width="1.1"/>
-    <rect x="1.2" y="1.2" width="5.6" height="5.6" transform="rotate(45 4 4)" fill="#C9A227"/>
-  </svg>
-  <svg class="corner br" viewBox="0 0 60 60">
-    <path d="M4 44 V12 Q4 4 12 4 H44" fill="none" stroke="#6D1A2D" stroke-width="2.2"/>
-    <path d="M11 36 V16 Q11 11 16 11 H36" fill="none" stroke="#C9A227" stroke-width="1.1"/>
-    <rect x="1.2" y="1.2" width="5.6" height="5.6" transform="rotate(45 4 4)" fill="#C9A227"/>
-  </svg>
+    <!-- Contenedor principal del certificado que será capturado -->
+    <div class="cover" id="certificado-pdf">
+      <div class="frame-outer"></div>
+      <div class="frame-inner"></div>
 
-  <div class="content">
+      <!-- Esquinas ornamentales con Wrappers DIV para que funcione la rotación -->
+      <div class="corner tl">
+        <svg viewBox="0 0 60 60">
+          <path d="M4 44 V12 Q4 4 12 4 H44" fill="none" stroke="#6D1A2D" stroke-width="2.2"/>
+          <path d="M11 36 V16 Q11 11 16 11 H36" fill="none" stroke="#C9A227" stroke-width="1.1"/>
+          <rect x="1.2" y="1.2" width="5.6" height="5.6" transform="rotate(45 4 4)" fill="#C9A227"/>
+        </svg>
+      </div>
+      <div class="corner tr">
+        <svg viewBox="0 0 60 60">
+          <path d="M4 44 V12 Q4 4 12 4 H44" fill="none" stroke="#6D1A2D" stroke-width="2.2"/>
+          <path d="M11 36 V16 Q11 11 16 11 H36" fill="none" stroke="#C9A227" stroke-width="1.1"/>
+          <rect x="1.2" y="1.2" width="5.6" height="5.6" transform="rotate(45 4 4)" fill="#C9A227"/>
+        </svg>
+      </div>
+      <div class="corner bl">
+        <svg viewBox="0 0 60 60">
+          <path d="M4 44 V12 Q4 4 12 4 H44" fill="none" stroke="#6D1A2D" stroke-width="2.2"/>
+          <path d="M11 36 V16 Q11 11 16 11 H36" fill="none" stroke="#C9A227" stroke-width="1.1"/>
+          <rect x="1.2" y="1.2" width="5.6" height="5.6" transform="rotate(45 4 4)" fill="#C9A227"/>
+        </svg>
+      </div>
+      <div class="corner br">
+        <svg viewBox="0 0 60 60">
+          <path d="M4 44 V12 Q4 4 12 4 H44" fill="none" stroke="#6D1A2D" stroke-width="2.2"/>
+          <path d="M11 36 V16 Q11 11 16 11 H36" fill="none" stroke="#C9A227" stroke-width="1.1"/>
+          <rect x="1.2" y="1.2" width="5.6" height="5.6" transform="rotate(45 4 4)" fill="#C9A227"/>
+        </svg>
+      </div>
 
-    <!-- Encabezado -->
-    <div class="header">
-      <img src="logo_ula_transparent.png" alt="Logo ULA" class="logo-izquierdo">
-      <div class="header-center">
-        <p class="univ">UNIVERSIDAD DE LOS ANDES</p>
-        <p class="facultad" style="margin-bottom: 8px;">Centro de Investigación en Ciencias Humanas</p>
-        <p class="facultad">Departamento de Economía de la facultad de ciencias económicas y Sociales</p>
-        <div class="divider">
+      <div class="content">
+
+        <!-- Encabezado -->
+        <div class="header">
+          <img src="logo_ula_transparent.png" alt="Logo ULA" class="logo-izquierdo">
+          <div class="header-center">
+            <p class="univ">UNIVERSIDAD DE LOS ANDES</p>
+            <p class="facultad" style="margin-bottom: 8px;">Centro de Investigación en Ciencias Humanas</p>
+            <p class="facultad">Departamento de Economía de la facultad de ciencias económicas y Sociales</p>
+            <div class="divider">
+              <span class="line"></span>
+              <span class="diamond"></span>
+              <span class="line"></span>
+            </div>
+          </div>
+          <img src="logo_humanic_transparent.png" alt="Logo Humanic" class="logo-derecho">
+        </div>
+
+        <!-- Título -->
+        <div class="title-block">
+          <p class="titulo">CERTIFICADO</p>
+          <p class="subtitulo">de Participación</p>
+        </div>
+
+        <!-- Otorgamiento -->
+        <p class="otorga">En reconocimiento a su compromiso con la investigación y la excelencia academica, se otorga el presente certificado a:</p>
+        
+        <p class="nombre" id="texto-nombre">Nombre del Estudiante</p>
+        
+        <div class="nombre-rule">
           <span class="line"></span>
           <span class="diamond"></span>
           <span class="line"></span>
         </div>
-      </div>
-      <img src="logo_humanic_transparent.png" alt="Logo Humanic" class="logo-derecho">
-    </div>
 
-    <!-- Título -->
-    <div class="title-block">
-      <p class="titulo">CERTIFICADO</p>
-      <p class="subtitulo">de Participación</p>
-    </div>
+        <!-- Cuerpo -->
+        <p class="cuerpo">
+          Por su destacada participación como <strong>Miembro Comité Organizador</strong> en la <strong>Jornada de Investigación de
+          Economía Internacional</strong>, de la Facultad de Ciencias Económicas y Sociales
+          de la Universidad de Los Andes, Venezuela.
+        </p>
 
-    <!-- Otorgamiento -->
-    <p class="otorga">En reconocimiento a su compromiso con la investigación y la excelencia academica, se otorga el presente certificado a:</p>
-    
-    <!-- ID añadido para modificar el nombre con JS -->
-    <p class="nombre" id="texto-nombre">Nombre del Estudiante</p>
-    
-    <div class="nombre-rule">
-      <span class="line"></span>
-      <span class="diamond"></span>
-      <span class="line"></span>
-    </div>
+        <!-- Fecha -->
+        <p class="fecha">Mérida, &nbsp; 14 &nbsp; de &nbsp; Agosto &nbsp; de 2026</p>
+        <div class="fecha-rule">
+          <span class="line"></span>
+          <span class="diamond"></span>
+          <span class="line"></span>
+        </div>
 
-    <!-- Cuerpo -->
-    <p class="cuerpo">
-      Por su destacada participación como <strong>Miembro Comité Organizador</strong> en la <strong>Jornada de Investigación de
-      Economía Internacional</strong>, de la Facultad de Ciencias Económicas y Sociales
-      de la Universidad de Los Andes, Venezuela.
+        <!-- Firmas -->
+        <div class="firmas">
+          <div class="firma">
+            <div class="sig-line"></div>
+            <p class="nombre-firma">Nelson Morales</p>
+            <p class="rol">Coordinador de Humanic</p>
+          </div>
+          <div class="firma">
+            <div class="sig-line"></div>
+            <p class="nombre-firma">Raúl Huizzi</p>
+            <p class="rol">Decano</p>
+          </div>
+          <div class="firma">
+            <div class="sig-line"></div>
+            <p class="nombre-firma">Dyanna Ruíz</p>
+            <p class="rol">Editora Jefe de HUMANIC</p>
+          </div>
+        </div>
 
-    </p>
-
-    <!-- Fecha -->
-    <p class="fecha">Mérida, &nbsp; 14 &nbsp; de &nbsp; Agosto &nbsp; de 2026</p>
-    <div class="fecha-rule">
-      <span class="line"></span>
-      <span class="diamond"></span>
-      <span class="line"></span>
-    </div>
-
-    <!-- Firmas -->
-    <div class="firmas">
-      <div class="firma">
-        <div class="sig-line"></div>
-        <p class="nombre-firma">Nelson Morales</p>
-        <p class="rol">Coordinador de Humanic</p>
-      </div>
-      <div class="firma">
-        <div class="sig-line"></div>
-        <p class="nombre-firma">Raúl Huizzi</p>
-        <p class="rol">Decano</p>
-      </div>
-      <div class="firma">
-        <div class="sig-line"></div>
-        <p class="nombre-firma">Dyanna Ruíz</p>
-        <p class="rol">Editora Jefe de HUMANIC</p>
       </div>
     </div>
-
   </div>
 </div>
 
@@ -395,8 +418,6 @@
 <script>
   function actualizarCertificado() {
     const nombreInput = document.getElementById('input-nombre').value;
-    const temaInput = document.getElementById('input-tema').value;
-
     document.getElementById('texto-nombre').innerText = nombreInput || 'Nombre del Estudiante';
   }
 
@@ -415,7 +436,10 @@
       jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' } 
     };
 
-    html2pdf().set(opciones).from(elemento).save();
+    // Forzamos a esperar a que las fuentes web estén completamente renderizadas
+    document.fonts.ready.then(function() {
+      html2pdf().set(opciones).from(elemento).save();
+    });
   }
 </script>
 
