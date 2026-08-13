@@ -17,20 +17,18 @@
     --dorado: #C9A227;
     --dorado-oscuro: #A8842A;
     --salvia: #9CAF88;
-    --salvia-claro: #DCE7D6;
     --marfil: #FAF6EE;
     --gris-calido: #6B5B52;
   }
   
   * { box-sizing: border-box; }
   
-  /* Limpiamos el body para que html2canvas no se confunda con los márgenes/paddings */
   html, body { margin: 0; padding: 0; width: 100%; height: 100%; }
   body { 
     background-color: #e0e0e0;
   }
 
-  /* Nuevo contenedor para centrar visualmente en la web sin afectar el PDF */
+  /* Contenedor para la web */
   .layout-wrapper {
     display: flex;
     justify-content: center;
@@ -38,7 +36,6 @@
     width: 100%;
   }
 
-  /* Separamos la sombra del contenedor principal del PDF */
   .cover-shadow {
     box-shadow: 0 10px 25px rgba(0,0,0,0.2);
   }
@@ -46,7 +43,7 @@
   @page { size: A4 landscape; margin: 0; }
   @page :first { margin: 0; }
 
-  /* ---------- Panel de Controles Flotante ---------- */
+  /* ---------- Panel de Controles ---------- */
   .panel-controles {
     position: fixed;
     top: 20px;
@@ -64,35 +61,18 @@
     border: 2px solid var(--vinotinto);
   }
   .panel-controles h3 { 
-    margin: 0; 
-    color: var(--vinotinto); 
-    font-size: 15px; 
-    text-align: center;
-    text-transform: uppercase;
-    letter-spacing: 1px;
+    margin: 0; color: var(--vinotinto); font-size: 15px; 
+    text-align: center; text-transform: uppercase; letter-spacing: 1px;
   }
   .panel-controles input {
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    font-family: 'Montserrat', sans-serif;
-    font-size: 14px;
-    width: 100%;
+    padding: 10px; border: 1px solid #ccc; border-radius: 5px;
+    font-family: 'Montserrat', sans-serif; font-size: 14px; width: 100%;
   }
-  .panel-controles input:focus {
-    outline: none;
-    border-color: var(--dorado);
-  }
+  .panel-controles input:focus { outline: none; border-color: var(--dorado); }
   .btn-descarga {
-    padding: 12px;
-    background-color: var(--vinotinto);
-    color: white;
-    border: none;
-    border-radius: 5px;
-    font-family: 'Montserrat', sans-serif;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.3s;
+    padding: 12px; background-color: var(--vinotinto); color: white;
+    border: none; border-radius: 5px; font-family: 'Montserrat', sans-serif;
+    font-weight: 600; cursor: pointer; transition: background-color 0.3s;
   }
   .btn-descarga:hover { background-color: var(--vino-oscuro); }
 
@@ -106,10 +86,8 @@
     background: var(--marfil);
     font-family: "EB Garamond", Georgia, serif;
     color: var(--vino-oscuro);
-    /* La sombra se movió a .cover-shadow para evitar recortes en el PDF */
   }
 
-  /* Marcos */
   .frame-outer {
     position: absolute; top: 8mm; left: 8mm; right: 8mm; bottom: 8mm;
     border: 1.6pt solid var(--vinotinto);
@@ -119,13 +97,12 @@
     border: 0.6pt solid var(--dorado);
   }
 
-  /* Esquinas ornamentales (Ahora en contenedores div) */
+  /* Esquinas fijadas matemáticamente sin CSS transforms */
   .corner { position: absolute; width: 16mm; height: 16mm; z-index: 3; }
-  .corner svg { width: 100%; height: 100%; }
   .corner.tl { top: 6.5mm;  left: 6.5mm; }
-  .corner.tr { top: 6.5mm;  right: 6.5mm;  transform: scaleX(-1); }
-  .corner.bl { bottom: 6.5mm; left: 6.5mm; transform: scaleY(-1); }
-  .corner.br { bottom: 6.5mm; right: 6.5mm; transform: scale(-1,-1); }
+  .corner.tr { top: 6.5mm;  right: 6.5mm; }
+  .corner.bl { bottom: 6.5mm; left: 6.5mm; }
+  .corner.br { bottom: 6.5mm; right: 6.5mm; }
 
   /* Contenido */
   .content {
@@ -137,212 +114,90 @@
     text-align: center;
   }
 
-  /* Encabezado */
-  .header {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-  
-  .logo-izquierdo { 
-    height: 42mm; 
-    width: auto; 
-  }
-  .logo-derecho { 
-    height: 43mm; 
-    width: auto; 
-  }
+  .header { width: 100%; display: flex; align-items: center; justify-content: space-between; }
+  .logo-izquierdo { height: 42mm; width: auto; }
+  .logo-derecho { height: 43mm; width: auto; }
   
   .header-center { flex: 1; padding: 0 8mm; }
-  .univ {
-    font-family: "Cinzel", serif;
-    font-weight: 700;
-    font-size: 14.5pt;
-    letter-spacing: 4.5px;
-    color: var(--vinotinto);
-    margin: 0 0 1.2mm 0;
-  }
-  .facultad {
-    font-family: "Montserrat", sans-serif;
-    font-weight: 500;
-    font-size: 6.9pt;
-    letter-spacing: 2.6px;
-    text-transform: uppercase;
-    color: var(--gris-calido);
-    margin: 0;
-  }
-  .divider {
-    display: flex; align-items: center; justify-content: center;
-    margin-top: 2.6mm; gap: 2.5mm;
-  }
-  /* Ajuste de líneas para evitar que desaparezcan */
-  .divider .line, .nombre-rule .line, .fecha-rule .line { 
-    height: 1px; 
-    background: var(--salvia); 
-    opacity: 0.7; 
-  }
+  .univ { font-family: "Cinzel", serif; font-weight: 700; font-size: 14.5pt; letter-spacing: 4.5px; color: var(--vinotinto); margin: 0 0 1.2mm 0; }
+  .facultad { font-family: "Montserrat", sans-serif; font-weight: 500; font-size: 6.9pt; letter-spacing: 2.6px; text-transform: uppercase; color: var(--gris-calido); margin: 0; }
+  
+  .divider { display: flex; align-items: center; justify-content: center; margin-top: 2.6mm; gap: 2.5mm; }
+  .divider .line, .nombre-rule .line, .fecha-rule .line { height: 1px; background: var(--salvia); opacity: 0.7; }
   .divider .line { width: 42mm; }
   .divider .diamond, .nombre-rule .diamond, .fecha-rule .diamond {
-    width: 2.1mm; height: 2.1mm; background: var(--dorado);
-    transform: rotate(45deg);
+    width: 2.1mm; height: 2.1mm; background: var(--dorado); transform: rotate(45deg);
   }
 
-  /* Título */
   .title-block { margin-top: 3.5mm; }
-  .titulo {
-    font-family: "Cinzel", serif;
-    font-weight: 600;
-    font-size: 32pt;
-    letter-spacing: 9px;
-    color: var(--vinotinto);
-    margin: 0;
-  }
-  .subtitulo {
-    font-family: "Montserrat", sans-serif;
-    font-weight: 600;
-    font-size: 9.5pt;
-    letter-spacing: 7px;
-    text-transform: uppercase;
-    color: var(--dorado-oscuro);
-    margin: 1mm 0 0 0;
-  }
+  .titulo { font-family: "Cinzel", serif; font-weight: 600; font-size: 32pt; letter-spacing: 9px; color: var(--vinotinto); margin: 0; }
+  .subtitulo { font-family: "Montserrat", sans-serif; font-weight: 600; font-size: 9.5pt; letter-spacing: 7px; text-transform: uppercase; color: var(--dorado-oscuro); margin: 1mm 0 0 0; }
 
-  /* Otorgamiento */
-  .otorga {
-    font-family: "EB Garamond", serif;
-    font-style: italic;
-    font-size: 11.5pt;
-    color: var(--vino-oscuro);
-    margin: 4mm 0 2mm 0;
-  }
-  .nombre {
-    font-family: "Great Vibes", cursive;
-    font-size: 38pt;
-    color: var(--vinotinto);
-    margin: 0;
-    line-height: 1.15;
-  }
-  .nombre-rule {
-    display: flex; align-items: center; justify-content: center;
-    margin-top: 1.6mm; gap: 2.5mm;
-  }
+  .otorga { font-family: "EB Garamond", serif; font-style: italic; font-size: 11.5pt; color: var(--vino-oscuro); margin: 4mm 0 2mm 0; }
+  .nombre { font-family: "Great Vibes", cursive; font-size: 38pt; color: var(--vinotinto); margin: 0; line-height: 1.15; }
+  
+  .nombre-rule { display: flex; align-items: center; justify-content: center; margin-top: 1.6mm; gap: 2.5mm; }
   .nombre-rule .line { width: 34mm; }
 
-  /* Cuerpo */
-  .cuerpo {
-    font-size: 11.2pt;
-    line-height: 1.68;
-    max-width: 202mm;
-    margin: 4mm 0 0 0;
-    text-align: center;
-    text-align-last: center;
-  }
+  .cuerpo { font-size: 11.2pt; line-height: 1.68; max-width: 202mm; margin: 4mm 0 0 0; text-align: center; text-align-last: center; }
   .cuerpo strong { color: var(--vinotinto); font-weight: 600; }
-  .cuerpo em { color: var(--vinotinto); font-style: italic; font-weight: 500; }
-
-  /* Fecha */
-  .fecha {
-    font-family: "Montserrat", sans-serif;
-    font-size: 7.6pt;
-    letter-spacing: 2.2px;
-    text-transform: uppercase;
-    color: var(--gris-calido);
-    margin-top: 3.5mm;
-  }
-
-  .fecha-rule {
-    display: flex; align-items: center; justify-content: center;
-    margin-top: 3.5mm; gap: 2.5mm;
-  }
+  
+  .fecha { font-family: "Montserrat", sans-serif; font-size: 7.6pt; letter-spacing: 2.2px; text-transform: uppercase; color: var(--gris-calido); margin-top: 3.5mm; }
+  .fecha-rule { display: flex; align-items: center; justify-content: center; margin-top: 3.5mm; gap: 2.5mm; }
   .fecha-rule .line { width: 26mm; }
 
-  /* Firmas con posicionamiento absoluto para evitar superposiciones */
-  .firmas {
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    position: absolute; /* Anclado a la base del contenedor .content */
-    bottom: 0;
-    left: 0;
-  }
+  .firmas { width: 100%; display: flex; justify-content: space-between; position: absolute; bottom: 0; left: 0; }
   .firma { width: 62mm; text-align: center; }
-  .firma .sig-line {
-    width: 52mm; height: 1px; background: #8A7A70;
-    margin: 0 auto 1.8mm auto;
-  }
-  .firma .nombre-firma {
-    font-family: "Montserrat", sans-serif;
-    font-weight: 600;
-    font-size: 8pt;
-    letter-spacing: 1px;
-    color: var(--vino-oscuro);
-    margin: 0 0 1mm 0;
-  }
-  .firma .rol {
-    font-family: "Montserrat", sans-serif;
-    font-weight: 600;
-    font-size: 7pt;
-    letter-spacing: 1.6px;
-    text-transform: uppercase;
-    color: var(--vinotinto);
-    margin: 0;
-  }
+  .firma .sig-line { width: 52mm; height: 1px; background: #8A7A70; margin: 0 auto 1.8mm auto; }
+  .firma .nombre-firma { font-family: "Montserrat", sans-serif; font-weight: 600; font-size: 8pt; letter-spacing: 1px; color: var(--vino-oscuro); margin: 0 0 1mm 0; }
+  .firma .rol { font-family: "Montserrat", sans-serif; font-weight: 600; font-size: 7pt; letter-spacing: 1.6px; text-transform: uppercase; color: var(--vinotinto); margin: 0; }
 </style>
 </head>
 <body>
 
-<!-- Panel de Controles -->
 <div class="panel-controles">
   <h3>Generador ULA</h3>
   <input type="text" id="input-nombre" placeholder="Nombre del Estudiante" oninput="actualizarCertificado()">
   <button class="btn-descarga" onclick="descargarCertificado()">Descargar PDF</button>
 </div>
 
-<!-- Layout envolvente para aislar el canvas -->
 <div class="layout-wrapper">
-  
-  <!-- Contenedor de la sombra -->
   <div class="cover-shadow">
-
-    <!-- Contenedor principal del certificado que será capturado -->
     <div class="cover" id="certificado-pdf">
       <div class="frame-outer"></div>
       <div class="frame-inner"></div>
 
-      <!-- Esquinas ornamentales con Wrappers DIV para que funcione la rotación -->
+      <!-- Esquinas redibujadas SIN TRANSFORMS para evitar bugs en el PDF -->
       <div class="corner tl">
-        <svg viewBox="0 0 60 60">
+        <svg viewBox="0 0 60 60" width="100%" height="100%">
           <path d="M4 44 V12 Q4 4 12 4 H44" fill="none" stroke="#6D1A2D" stroke-width="2.2"/>
           <path d="M11 36 V16 Q11 11 16 11 H36" fill="none" stroke="#C9A227" stroke-width="1.1"/>
-          <rect x="1.2" y="1.2" width="5.6" height="5.6" transform="rotate(45 4 4)" fill="#C9A227"/>
+          <polygon points="4,0 8,4 4,8 0,4" fill="#C9A227"/>
         </svg>
       </div>
       <div class="corner tr">
-        <svg viewBox="0 0 60 60">
-          <path d="M4 44 V12 Q4 4 12 4 H44" fill="none" stroke="#6D1A2D" stroke-width="2.2"/>
-          <path d="M11 36 V16 Q11 11 16 11 H36" fill="none" stroke="#C9A227" stroke-width="1.1"/>
-          <rect x="1.2" y="1.2" width="5.6" height="5.6" transform="rotate(45 4 4)" fill="#C9A227"/>
+        <svg viewBox="0 0 60 60" width="100%" height="100%">
+          <path d="M56 44 V12 Q56 4 48 4 H16" fill="none" stroke="#6D1A2D" stroke-width="2.2"/>
+          <path d="M49 36 V16 Q49 11 44 11 H24" fill="none" stroke="#C9A227" stroke-width="1.1"/>
+          <polygon points="56,0 60,4 56,8 52,4" fill="#C9A227"/>
         </svg>
       </div>
       <div class="corner bl">
-        <svg viewBox="0 0 60 60">
-          <path d="M4 44 V12 Q4 4 12 4 H44" fill="none" stroke="#6D1A2D" stroke-width="2.2"/>
-          <path d="M11 36 V16 Q11 11 16 11 H36" fill="none" stroke="#C9A227" stroke-width="1.1"/>
-          <rect x="1.2" y="1.2" width="5.6" height="5.6" transform="rotate(45 4 4)" fill="#C9A227"/>
+        <svg viewBox="0 0 60 60" width="100%" height="100%">
+          <path d="M4 16 V48 Q4 56 12 56 H44" fill="none" stroke="#6D1A2D" stroke-width="2.2"/>
+          <path d="M11 24 V44 Q11 49 16 49 H36" fill="none" stroke="#C9A227" stroke-width="1.1"/>
+          <polygon points="4,52 8,56 4,60 0,56" fill="#C9A227"/>
         </svg>
       </div>
       <div class="corner br">
-        <svg viewBox="0 0 60 60">
-          <path d="M4 44 V12 Q4 4 12 4 H44" fill="none" stroke="#6D1A2D" stroke-width="2.2"/>
-          <path d="M11 36 V16 Q11 11 16 11 H36" fill="none" stroke="#C9A227" stroke-width="1.1"/>
-          <rect x="1.2" y="1.2" width="5.6" height="5.6" transform="rotate(45 4 4)" fill="#C9A227"/>
+        <svg viewBox="0 0 60 60" width="100%" height="100%">
+          <path d="M56 16 V48 Q56 56 48 56 H16" fill="none" stroke="#6D1A2D" stroke-width="2.2"/>
+          <path d="M49 24 V44 Q49 49 44 49 H24" fill="none" stroke="#C9A227" stroke-width="1.1"/>
+          <polygon points="56,52 60,56 56,60 52,56" fill="#C9A227"/>
         </svg>
       </div>
 
       <div class="content">
-
-        <!-- Encabezado -->
         <div class="header">
           <img src="logo_ula_transparent.png" alt="Logo ULA" class="logo-izquierdo">
           <div class="header-center">
@@ -350,47 +205,34 @@
             <p class="facultad" style="margin-bottom: 8px;">Centro de Investigación en Ciencias Humanas</p>
             <p class="facultad">Departamento de Economía de la facultad de ciencias económicas y Sociales</p>
             <div class="divider">
-              <span class="line"></span>
-              <span class="diamond"></span>
-              <span class="line"></span>
+              <span class="line"></span><span class="diamond"></span><span class="line"></span>
             </div>
           </div>
           <img src="logo_humanic_transparent.png" alt="Logo Humanic" class="logo-derecho">
         </div>
 
-        <!-- Título -->
         <div class="title-block">
           <p class="titulo">CERTIFICADO</p>
           <p class="subtitulo">de Participación</p>
         </div>
 
-        <!-- Otorgamiento -->
         <p class="otorga">En reconocimiento a su compromiso con la investigación y la excelencia academica, se otorga el presente certificado a:</p>
-        
         <p class="nombre" id="texto-nombre">Nombre del Estudiante</p>
-        
         <div class="nombre-rule">
-          <span class="line"></span>
-          <span class="diamond"></span>
-          <span class="line"></span>
+          <span class="line"></span><span class="diamond"></span><span class="line"></span>
         </div>
 
-        <!-- Cuerpo -->
         <p class="cuerpo">
           Por su destacada participación como <strong>Miembro Comité Organizador</strong> en la <strong>Jornada de Investigación de
           Economía Internacional</strong>, de la Facultad de Ciencias Económicas y Sociales
           de la Universidad de Los Andes, Venezuela.
         </p>
 
-        <!-- Fecha -->
         <p class="fecha">Mérida, &nbsp; 14 &nbsp; de &nbsp; Agosto &nbsp; de 2026</p>
         <div class="fecha-rule">
-          <span class="line"></span>
-          <span class="diamond"></span>
-          <span class="line"></span>
+          <span class="line"></span><span class="diamond"></span><span class="line"></span>
         </div>
 
-        <!-- Firmas -->
         <div class="firmas">
           <div class="firma">
             <div class="sig-line"></div>
@@ -408,13 +250,11 @@
             <p class="rol">Editora Jefe de HUMANIC</p>
           </div>
         </div>
-
       </div>
     </div>
   </div>
 </div>
 
-<!-- Script de Funcionalidad -->
 <script>
   function actualizarCertificado() {
     const nombreInput = document.getElementById('input-nombre').value;
@@ -432,11 +272,10 @@
       margin:       0,
       filename:     nombreArchivo,
       image:        { type: 'jpeg', quality: 0.98 },
-      html2canvas:  { scale: 2, useCORS: true },
+      html2canvas:  { scale: 2, useCORS: true, logging: false },
       jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' } 
     };
 
-    // Forzamos a esperar a que las fuentes web estén completamente renderizadas
     document.fonts.ready.then(function() {
       html2pdf().set(opciones).from(elemento).save();
     });
