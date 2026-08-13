@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Certificado — Jornada de Investigación · Economía Internacional · ULA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Great+Vibes&family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
+
+<!-- Librería html2pdf.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+<style>
+  :root {
+    --vinotinto: #6D1A2D;
+    --vino-oscuro: #3E1220;
+    --dorado: #C9A227;
+    --dorado-oscuro: #A8842A;
+    --salvia: #9CAF88;
+    --salvia-claro: #DCE7D6;
+    --marfil: #FAF6EE;
+    --gris-calido: #6B5B52;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body { 
+    string-set: doctitle ""; 
+    background-color: #e0e0e0;
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  @page { size: A4 landscape; margin: 0; }
+  @page :first { margin: 0; }
+
+  /* ---------- Panel de Controles Flotante ---------- */
+  .panel-controles {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    font-family: 'Montserrat', sans-serif;
+    width: 320px;
+    border: 2px solid var(--vinotinto);
+  }
+  .panel-controles h3 { 
+    margin: 0; 
+    color: var(--vinotinto); 
+    font-size: 15px; 
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .panel-controles input {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 14px;
+    width: 100%;
+  }
+  .panel-controles input:focus {
+    outline: none;
+    border-color: var(--dorado);
+  }
+  .btn-descarga {
+    padding: 12px;
+    background-color: var(--vinotinto);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  .btn-descarga:hover { background-color: var(--vino-oscuro); }
+
+  /* ---------- Diseño del Certificado ---------- */
+  .cover {
+    width: 297mm;
+    height: 210mm;
+    margin: 0;
+    position: relative;
+    overflow: hidden;
+    background: var(--marfil);
+    font-family: "EB Garamond", Georgia, serif;
+    color: var(--vino-oscuro);
+    box-shadow: 0 0 15px rgba(0,0,0,0.1); 
+  }
+
+  /* Marcos */
+  .frame-outer {
+    position: absolute; top: 8mm; left: 8mm; right: 8mm; bottom: 8mm;
+    border: 1.6pt solid var(--vinotinto);
+  }
+  .frame-inner {
+    position: absolute; top: 10.5mm; left: 10.5mm; right: 10.5mm; bottom: 10.5mm;
+    border: 0.6pt solid var(--dorado);
+  }
+
+  /* Esquinas ornamentales */
+  .corner { position: absolute; width: 16mm; height: 16mm; z-index: 3; }
+  .corner.tl { top: 6.5mm;  left: 6.5mm; }
+  .corner.tr { top: 6.5mm;  right: 6.5mm;  transform: scaleX(-1); }
+  .corner.bl { bottom: 6.5mm; left: 6.5mm; transform: scaleY(-1); }
+  .corner.br { bottom: 6.5mm; right: 6.5mm; transform: scale(-1,-1); }
+
+  /* Contenido */
+  .content {
+    position: absolute;
+    top: 13mm; left: 22mm; right: 22mm; bottom: 12mm;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  /* Encabezado */
+  .header {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  
+  /* NUEVO: Tamaños independientes para equilibrar el peso visual */
+  .logo-izquierdo { 
+    height: 42mm; /* Un poco más alto porque es rectangular */
+    width: auto; 
+  }
+  .logo-derecho { 
+    height: 43mm; /* Más bajo para que el círculo no se vea gigante */
+    width: auto; 
+  }
+  
+  .header-center { flex: 1; padding: 0 8mm; }
+  .univ {
+    font-family: "Cinzel", serif;
+    font-weight: 700;
+    font-size: 14.5pt;
+    letter-spacing: 4.5px;
+    color: var(--vinotinto);
+    margin: 0 0 1.2mm 0;
+  }
+  .facultad {
+    font-family: "Montserrat", sans-serif;
+    font-weight: 500;
+    font-size: 6.9pt;
+    letter-spacing: 2.6px;
+    text-transform: uppercase;
+    color: var(--gris-calido);
+    margin: 0;
+  }
+  .divider {
+    display: flex; align-items: center; justify-content: center;
+    margin-top: 2.6mm; gap: 2.5mm;
+  }
+  .divider .line { width: 42mm; height: 0.55px; background: var(--salvia); }
+  .divider .diamond {
+    width: 2.1mm; height: 2.1mm; background: var(--dorado);
+    transform: rotate(45deg);
+  }
+
+  /* Título */
+  .title-block { margin-top: 3.5mm; }
+  .titulo {
+    font-family: "Cinzel", serif;
+    font-weight: 600;
+    font-size: 32pt;
+    letter-spacing: 9px;
+    color: var(--vinotinto);
+    margin: 0;
+  }
+  .subtitulo {
+    font-family: "Montserrat", sans-serif;
+    font-weight: 600;
+    font-size: 9.5pt;
+    letter-spacing: 7px;
+    text-transform: uppercase;
+    color: var(--dorado-oscuro);
+    margin: 1mm 0 0 0;
+  }
+
+  /* Otorgamiento */
+  .otorga {
+    font-family: "EB Garamond", serif;
+    font-style: italic;
+    font-size: 11.5pt;
+    color: var(--vino-oscuro);
+    margin: 4mm 0 2mm 0;
+  }
+  .nombre {
+    font-family: "Great Vibes", cursive;
+    font-size: 38pt;
+    color: var(--vinotinto);
+    margin: 0;
+    line-height: 1.15;
+  }
+  .nombre-rule {
+    display: flex; align-items: center; justify-content: center;
+    margin-top: 1.6mm; gap: 2.5mm;
+  }
+  .nombre-rule .line { width: 34mm; height: 0.55px; background: var(--salvia); }
+  .nombre-rule .diamond {
+    width: 1.8mm; height: 1.8mm; background: var(--dorado);
+    transform: rotate(45deg);
+  }
+
+  /* Cuerpo */
+  .cuerpo {
+    font-size: 11.2pt;
+    line-height: 1.68;
+    max-width: 202mm;
+    margin: 4mm 0 0 0;
+    text-align: center;
+    text-align-last: center;
+  }
+  .cuerpo strong { color: var(--vinotinto); font-weight: 600; }
+  .cuerpo em { color: var(--vinotinto); font-style: italic; font-weight: 500; }
+
+  /* Fecha */
+  .fecha {
+    font-family: "Montserrat", sans-serif;
+    font-size: 7.6pt;
+    letter-spacing: 2.2px;
+    text-transform: uppercase;
+    color: var(--gris-calido);
+    margin-top: 3.5mm;
+  }
+
+  /* Divisor ornamental bajo la fecha */
+  .fecha-rule {
+    display: flex; align-items: center; justify-content: center;
+    margin-top: 3.5mm; gap: 2.5mm;
+  }
+  .fecha-rule .line { width: 26mm; height: 0.55px; background: var(--salvia); }
+  .fecha-rule .diamond {
+    width: 1.8mm; height: 1.8mm; background: var(--dorado);
+    transform: rotate(45deg);
+  }
+
+  /* Firmas */
+  .firmas {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    margin-top: auto; 
+    padding: 0 12mm 1.5mm 12mm;
+  }
+  .firma { width: 62mm; text-align: center; }
+  .firma .sig-line {
+    width: 52mm; height: 0.7px; background: #8A7A70;
+    margin: 0 auto 1.8mm auto;
+  }
+  .firma .nombre-firma {
+    font-family: "Montserrat", sans-serif;
+    font-weight: 600;
+    font-size: 8pt;
+    letter-spacing: 1px;
+    color: var(--vino-oscuro);
+    margin: 0 0 1mm 0;
+  }
+  .firma .rol {
+    font-family: "Montserrat", sans-serif;
+    font-weight: 600;
+    font-size: 7pt;
+    letter-spacing: 1.6px;
+    text-transform: uppercase;
+    color: var(--vinotinto);
+    margin: 0 0 0.8mm 0;
+  }
+</style>
+</head>
+<body>
+
+<!-- Panel de Controles -->
+<div class="panel-controles">
+  <h3>Generador ULA</h3>
+  <input type="text" id="input-nombre" placeholder="Nombre del Estudiante" oninput="actualizarCertificado()">
+  <input type="text" id="input-tema" placeholder="Tema de la presentación" oninput="actualizarCertificado()">
+  <button class="btn-descarga" onclick="descargarCertificado()">Descargar PDF</button>
+</div>
+
+<!-- Contenedor principal del certificado -->
+<div class="cover" id="certificado-pdf">
+  <div class="frame-outer"></div>
+  <div class="frame-inner"></div>
+
+  <!-- Esquinas ornamentales -->
+  <svg class="corner tl" viewBox="0 0 60 60">
+    <path d="M4 44 V12 Q4 4 12 4 H44" fill="none" stroke="#6D1A2D" stroke-width="2.2"/>
+    <path d="M11 36 V16 Q11 11 16 11 H36" fill="none" stroke="#C9A227" stroke-width="1.1"/>
+    <rect x="1.2" y="1.2" width="5.6" height="5.6" transform="rotate(45 4 4)" fill="#C9A227"/>
+  </svg>
+  <svg class="corner tr" viewBox="0 0 60 60">
+    <path d="M4 44 V12 Q4 4 12 4 H44" fill="none" stroke="#6D1A2D" stroke-width="2.2"/>
+    <path d="M11 36 V16 Q11 11 16 11 H36" fill="none" stroke="#C9A227" stroke-width="1.1"/>
+    <rect x="1.2" y="1.2" width="5.6" height="5.6" transform="rotate(45 4 4)" fill="#C9A227"/>
+  </svg>
+  <svg class="corner bl" viewBox="0 0 60 60">
+    <path d="M4 44 V12 Q4 4 12 4 H44" fill="none" stroke="#6D1A2D" stroke-width="2.2"/>
+    <path d="M11 36 V16 Q11 11 16 11 H36" fill="none" stroke="#C9A227" stroke-width="1.1"/>
+    <rect x="1.2" y="1.2" width="5.6" height="5.6" transform="rotate(45 4 4)" fill="#C9A227"/>
+  </svg>
+  <svg class="corner br" viewBox="0 0 60 60">
+    <path d="M4 44 V12 Q4 4 12 4 H44" fill="none" stroke="#6D1A2D" stroke-width="2.2"/>
+    <path d="M11 36 V16 Q11 11 16 11 H36" fill="none" stroke="#C9A227" stroke-width="1.1"/>
+    <rect x="1.2" y="1.2" width="5.6" height="5.6" transform="rotate(45 4 4)" fill="#C9A227"/>
+  </svg>
+
+  <div class="content">
+
+    <!-- Encabezado -->
+    <div class="header">
+      <img src="logo_ula_transparent.png" alt="Logo ULA" class="logo-izquierdo">
+      <div class="header-center">
+        <p class="univ">UNIVERSIDAD DE LOS ANDES</p>
+        <p class="facultad" style="margin-bottom: 8px;">Centro de Investigación en Ciencias Humanas</p>
+        <p class="facultad">Departamento de Economía de la facultad de ciencias económicas y Sociales</p>
+        <div class="divider">
+          <span class="line"></span>
+          <span class="diamond"></span>
+          <span class="line"></span>
+        </div>
+      </div>
+      <img src="logo_humanic_transparent.png" alt="Logo Humanic" class="logo-derecho">
+    </div>
+
+    <!-- Título -->
+    <div class="title-block">
+      <p class="titulo">CERTIFICADO</p>
+      <p class="subtitulo">de Participación</p>
+    </div>
+
+    <!-- Otorgamiento -->
+    <p class="otorga">En reconocimiento a su compromiso con la investigación y la excelencia academica, se otorga el presente certificado a:</p>
+    
+    <!-- ID añadido para modificar el nombre con JS -->
+    <p class="nombre" id="texto-nombre">Nombre del Estudiante</p>
+    
+    <div class="nombre-rule">
+      <span class="line"></span>
+      <span class="diamond"></span>
+      <span class="line"></span>
+    </div>
+
+    <!-- Cuerpo -->
+    <p class="cuerpo">
+      Por su destacada participación en la <strong>Jornada de Investigación de
+      Economía Internacional</strong>, con la presentación del tema
+      <em id="texto-tema">«Dinamica economica entre Colombia y Venezuela»</em>, de la Facultad de Ciencias Económicas y Sociales
+      de la Universidad de Los Andes, Venezuela.
+    </p>
+
+    <!-- Fecha -->
+    <p class="fecha">Mérida, &nbsp; 14 &nbsp; de &nbsp; Agosto &nbsp; de 2026</p>
+    <div class="fecha-rule">
+      <span class="line"></span>
+      <span class="diamond"></span>
+      <span class="line"></span>
+    </div>
+
+    <!-- Firmas -->
+    <div class="firmas">
+      <div class="firma">
+        <div class="sig-line"></div>
+        <p class="nombre-firma">Nelson Morales</p>
+        <p class="rol">Coordinador de Humanic</p>
+      </div>
+      <div class="firma">
+        <div class="sig-line"></div>
+        <p class="nombre-firma">Raúl Huizzi</p>
+        <p class="rol">Decano</p>
+      </div>
+      <div class="firma">
+        <div class="sig-line"></div>
+        <p class="nombre-firma">Dyanna Ruíz</p>
+        <p class="rol">Editora Jefe de HUMANIC</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Script de Funcionalidad -->
+<script>
+  function actualizarCertificado() {
+    const nombreInput = document.getElementById('input-nombre').value;
+    const temaInput = document.getElementById('input-tema').value;
+
+    document.getElementById('texto-nombre').innerText = nombreInput || 'Nombre del Estudiante';
+    document.getElementById('texto-tema').innerText = '«' + (temaInput || 'Dinamica economica entre Colombia y Venezuela') + '»';
+  }
+
+  function descargarCertificado() {
+    const elemento = document.getElementById('certificado-pdf');
+    
+    let nombreEstudiante = document.getElementById('input-nombre').value.trim();
+    if (!nombreEstudiante) nombreEstudiante = "Estudiante";
+    const nombreArchivo = 'Certificado_' + nombreEstudiante.replace(/\s+/g, '_') + '.pdf';
+
+    const opciones = {
+      margin:       0,
+      filename:     nombreArchivo,
+      image:        { type: 'jpeg', quality: 0.98 },
+      html2canvas:  { scale: 2, useCORS: true },
+      jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' } 
+    };
+
+    html2pdf().set(opciones).from(elemento).save();
+  }
+</script>
+
+</body>
+</html>
